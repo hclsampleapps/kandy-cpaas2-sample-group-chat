@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Group Chat App</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div>
+        <h2>Group Chat App</h2>
+        <div>
+            <h4>Authenticate using your account information</h4>
+            <div>
+                <ul>
+                    <li>
+                        <label>Server URL:</label>
+                        <input type="text" id="serverUrl" class="long">
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <ul class="inline">
+                    <li>
+                        <input type="radio" name="optionsRadios" id="passwordGrant" checked>
+                        <label>Password Grant </label>
+                    </li>
+                    <li>
+                        <input type="radio" name="optionsRadios" id="clientCred">
+                        <label>Client Credentials</label>
+                    </li>
+                </ul>
+                <div id="passwordID">
+                    <ul>
+                        <li>
+                            <label>Client ID:</label>
+                            <input type="text" id="clientId" />
+                        </li>
+                        <li>
+                            <label>User Email:</label>
+                            <input type="text" id="userEmail" />
+                        </li>
+                        <li>
+                            <label>Password:</label>
+                            <input type="password" id="password" />
+                        </li>
+                        <li>
+                            <label>Phone Number:</label>
+                            <input type="text" id="sms-number-from" />
+                        </li>
+                    </ul>
+                    <button type="button" onclick="loginByPasswordGrant()" id="loginByPwdBtn">Login</button>
+                </div>
+                <div id="clientCredID">
+                    <ul>
+                        <li>
+                            <label>Private project key:</label>
+                            <input type="text" id="privateKey" />
+                        </li>
+                        <li>
+                            <label>Private project secret:</label>
+                            <input type="text" id="privateSecret" />
+                        </li>
+                    </ul>
+                    <button type="button" onclick="loginByClientCred()" id="loginByProjCredBtn">Login</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h4>Subscribe to Chat Service on Websocket Channel</h4>
+            <p><input type="button" value="Subscribe" onclick="subscribe()" /></p>
+        </div>
+        <div>
+            <h4> Group Management </h4>
+            <ul>
+                <li>
+                    <input type="button" value="Create Group" onclick="createGroup()" />
+                </li>
+                <li>
+                    <input type="button" value="Add Participant" onclick="addParticipant()" />
+                </li>
+                <li>
+                    <input type="button" value="Remove Participant" onclick="removeParticipant()" />
+                </li>
+                <li>
+                    <input type="button" value="Fetch Groups from Server" onclick="fetchGroupsFromServer()" />
+                </li>
+                <li>
+                    <input type="button" value="Get Groups" onclick="getGroups()" />
+                </li>
+                <li>
+                    <input type="button" value="Get Group By ID" onclick="getGroupById()" />
+                </li>
+                <li>
+                    <input type='button' value='Get Participants By GroupID' onclick='getPartiByGroupById();' />
+                </li>
+                <li>
+                    <input type='button' value='Leave GroupByID' onclick='leaveGroupById();' />
+                </li>
+                <li>
+                    <input type='button' value='List Invitations' onclick='getInvites();' />
+                </li>
+                <li>
+                    <input type='button' value='Accept Invite' onclick='acceptInvite();' />
+                </li>
+                <li>
+                    <input type='button' value='Reject Invite' onclick='rejectInvite();' />
+                </li>
+                <li>
+                    <input type='button' value='Delete GroupByID' onclick='deleteGroupById();' />
+                </li>
+                <li>
+                    <input type='button' value='Fetch Conversations in a group' onclick='fetchConvosInGroup();' />
+                </li>
+            </ul>
+        </div>
+        <div>
+            <h4>Conversations </h4>
+            <input type="button" value="createGroupChat" onclick="createConvo()">
+        </div>
+        <div>
+            <h4>Chat History</h4>
+            <div id="convo-messages" class="box"></div>
+            <p>
+                <b>Message:</b>
+                <input type="text" placeholder="Type your message here" id="message-text" class="long" />
+                <button type="button" onclick="sendMessage()">Send</button>
+            </p>
+        </div>
+        <div class="terminal-wrapper">
+            <h4>Terminal</h4>
+            <div id="terminal"></div>
+        </div>
+    </div>
+    <script src="./js/kandy.js"></script>
+    <script src="./js/utility.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+
+</html>
