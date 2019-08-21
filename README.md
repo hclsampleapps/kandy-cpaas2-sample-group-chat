@@ -5,7 +5,7 @@ Group chat app is used to create communication channel among multiple users via 
 
 This app is used to create a communication between different participants on one group.
 
-- Try the [demo](https://hclsampleapps.github.io/kandy-cpaas2-sample-group-chat/)
+- Try the [demo](https://hclsampleapps.github.io/kandy-cpaas2-sample-group-chat/app)
 - Try the [source code](https://github.com/hclsampleapps/kandy-cpaas2-sample-group-chat)
 
 #### User Manual
