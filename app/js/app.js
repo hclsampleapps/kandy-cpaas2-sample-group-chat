@@ -154,6 +154,7 @@ function initClient() {
         log('Being invited to join: ' + grou.invitation.groupId + "..participant: " + grou.invitation.participant[0].address + "..status: " + grou.invitation.participant[0].status)
         // invitedToGroup = myGroup
         invitedToGroup = grou.invitation.groupId;
+		myGroup = invitedToGroup;
         console.log('invitedToGroup ---- ', invitedToGroup)
     })
 
@@ -347,12 +348,18 @@ function log(message) {
 }
 
 function createGroup() {
-    var parArray = [{ "address": "hcaidiocpaas1@hcaidio.ysxe.att.com" },
-    { "address": "hcaidiocpaas2@hcaidio.ysxe.att.com" },
-    { "address": "hcaidiocpaas3@hcaidio.ysxe.att.com" },
-    { "address": "hcaidiocpaas4@hcaidio.ysxe.att.com" },
-    { "address": "hcaidiocpaas5@hcaidio.ysxe.att.com" },
-    { "address": "hcaidiocpaas6@hcaidio.ysxe.att.com" }];
+	
+	let participant1 = document.getElementById('participant1').value;
+	let participant2 = document.getElementById('participant2').value;
+	let groupName = document.getElementById('groupname').value;
+	let subName = document.getElementById('subname').value;
+	
+	let obj1 = { "address": participant1};
+	let obj2 = { "address": participant2};
+	
+    var parArray = [obj1,obj2];
+	console.log(JSON.stringify(parArray));
+	
     // { "address": "hcaidiocpaas7@hcaidio.ysxe.att.com" },
     // { "address": "hcaidiocpaas8@hcaidio.ysxe.att.com" },
     // { "address": "hcaidiocpaas9@hcaidio.ysxe.att.com" },
@@ -399,24 +406,26 @@ function createGroup() {
 
     var params = {
         "participants": parArray,
-        "subject": "group100",
-        "name": "Group100",
+        "subject": subName,
+        "name": groupName,
         "image": "empty",
         "type": "closed"
     }
 
-    client.groups.create(params)
+    client.groups.create(params);
 }
 
 function addParticipant() {
     console.log(myGroup)
+	let participant3 = document.getElementById('participant3').value;
     // client.groups.addParticipant(myGroup.groupId, "ramasafariapp@ramasafariappbus.3qdl.att.com")
-    client.groups.addParticipant(myGroup, "hcaidiocpaas16@hcaidio.ysxe.att.com")
+    client.groups.addParticipant(myGroup, participant3)
     log('Add participant: ' + myGroup)
 }
 
 function removeParticipant() {
-    client.groups.removeParticipant(myGroup, "hcaidiocpaas5@hcaidio.ysxe.att.com")
+	let removeParticipant = document.getElementById('participant4').value;
+    client.groups.removeParticipant(myGroup, removeParticipant)
     log('Remove participant: ' + myGroup)
 }
 
@@ -428,7 +437,7 @@ function fetchGroupsFromServer() {
 function getGroups() {
     var groupArray = client.groups.getAll()
     console.log("dump groupArray")
-    log('Got groups: ' + groupArray.length)
+    log('Got groups: ' + JSON.stringify(groupArray));
     groupArray.forEach(function (item, index, array) {
         console.log(item, index)
     })
@@ -462,13 +471,14 @@ function leaveGroupById() {
 
 function getInvites() {
     var inviteArray = client.groups.getInvitations()
-    log('Got list of Invites')
+    log('Got list of Invites '+ JSON.stringify(inviteArray))
     inviteArray.forEach(function (item, index, array) {
         console.log(item, index)
     })
 }
 
 function acceptInvite() {
+	
     client.groups.acceptInvitation(invitedToGroup)
     log('Accept Invitation from: ' + invitedToGroup)
 }
@@ -538,7 +548,7 @@ function fetchConvosInGroup() {
       } 
     console.log('retrieve messsages in this groupchat conversation finished')
     **/
-    log('Fetching Conversations in group')
+    log('Fetching Conversations in group '+ JSON.stringify(conversations));
 }
 
 

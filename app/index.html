@@ -73,6 +73,30 @@
             <h4>Subscribe to Chat Service on Websocket Channel</h4>
             <p><input type="button" value="Subscribe" onclick="subscribe()" /></p>
         </div>
+		<div>
+            <h4>Add Participant</h4>
+            <div >
+                    <ul>
+                        <li>
+                            <label>Participant 1:</label>
+                            <input type="text" id="participant1" />
+                        </li>
+                        <li>
+                            <label>Participant 2:</label>
+                            <input type="text" id="participant2" />
+                        </li>
+						<li>
+                            <label>Subject of group chat:</label>
+                            <input type="text" id="subname" />
+                        </li>
+						<li>
+                            <label>Group Name:</label>
+                            <input type="text" id="groupname" />
+                        </li>
+                    </ul>
+                    
+                </div>
+        </div>
         <div>
             <h4> Group Management </h4>
             <ul>
@@ -80,9 +104,13 @@
                     <input type="button" value="Create Group" onclick="createGroup()" />
                 </li>
                 <li>
+						<label>Add More participant:</label>
+                        <input type="text" id="participant3" />
                     <input type="button" value="Add Participant" onclick="addParticipant()" />
                 </li>
                 <li>
+						<label>Remove participant:</label>
+                        <input type="text" id="participant4" />
                     <input type="button" value="Remove Participant" onclick="removeParticipant()" />
                 </li>
                 <li>
