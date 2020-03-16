@@ -73,29 +73,24 @@
             <h4>Subscribe to Chat Service on Websocket Channel</h4>
             <p><input type="button" value="Subscribe" onclick="subscribe()" /></p>
         </div>
-		<div>
+        <div>
             <h4>Add Participant</h4>
-            <div >
-                    <ul>
-                        <li>
-                            <label>Participant 1:</label>
-                            <input type="text" id="participant1" />
-                        </li>
-                        <li>
-                            <label>Participant 2:</label>
-                            <input type="text" id="participant2" />
-                        </li>
-						<li>
-                            <label>Subject of group chat:</label>
-                            <input type="text" id="subname" />
-                        </li>
-						<li>
-                            <label>Group Name:</label>
-                            <input type="text" id="groupname" />
-                        </li>
-                    </ul>
-                    
-                </div>
+            <div>
+                <ul>
+                    <li>
+                        <label>Participant 1:</label>
+                        <input type="text" id="participant1" />
+                    </li>
+                    <li>
+                        <label>Subject of group chat:</label>
+                        <input type="text" id="subname" />
+                    </li>
+                    <li>
+                        <label>Group Name:</label>
+                        <input type="text" id="groupname" />
+                    </li>
+                </ul>
+            </div>
         </div>
         <div>
             <h4> Group Management </h4>
@@ -104,13 +99,13 @@
                     <input type="button" value="Create Group" onclick="createGroup()" />
                 </li>
                 <li>
-						<label>Add More participant:</label>
-                        <input type="text" id="participant3" />
+                    <label>Add More participant:</label>
+                    <input type="text" id="participant3" />
                     <input type="button" value="Add Participant" onclick="addParticipant()" />
                 </li>
                 <li>
-						<label>Remove participant:</label>
-                        <input type="text" id="participant4" />
+                    <label>Remove participant:</label>
+                    <input type="text" id="participant4" />
                     <input type="button" value="Remove Participant" onclick="removeParticipant()" />
                 </li>
                 <li>
@@ -131,10 +126,10 @@
                 <li>
                     <input type='button' value='List Invitations' onclick='getInvites();' />
                 </li>
-                <li>
+                <li style="display:none">
                     <input type='button' value='Accept Invite' onclick='acceptInvite();' />
                 </li>
-                <li>
+                <li style="display:none">
                     <input type='button' value='Reject Invite' onclick='rejectInvite();' />
                 </li>
                 <li>
@@ -163,7 +158,8 @@
             <div id="terminal"></div>
         </div>
     </div>
-    <script src="./js/kandy.js"></script>
+    <script src="https://unpkg.com/@kandy-io/cpaas-sdk@4.13.0/dist/kandy.js" integrity="sha384-Wa8CBqzYNDcYr19G9DfxrnVSyfSPZIx47kGYFMDw99WFLfTqMQlk67/+8l9HQHMA" crossorigin="anonymous">
+    </script>
     <script src="./js/utility.js"></script>
     <script src="./js/app.js"></script>
 </body>

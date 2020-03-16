@@ -8,7 +8,16 @@ var myGroup;
 var invitedToGroup;
 const tokenAPI = '/cpaas/auth/v1/token'
 
-whenReady(function () {
+// We will only track one group in this demo (even though multiple ones will
+// be created on server side if you hit Create button with different names).
+var group_ID
+
+// From the start, nobody is administrator until someone first creates a group.
+var adminUser = false
+
+var adminActionsAdded = false
+
+whenReady(function() {
     changeView = new ChangeView();
     changeView.showPasswordGrant();
 });
@@ -54,40 +63,7 @@ function initClient() {
     })
     console.log('client ---> ', client)
 
-    /*
-     * Listen for new messages sent or received.
-     * This event occurs when a new message is added to a conversation.
-     */
-    // client.on('messages:change', function(convo) {
-    //     const destination = convo.destination[0]
-    //     log('New message in conversation with ' + destination)
-
-    //     if (!currentConvo && ['im', 'chat', 'sms'].includes(convo.type)) {
-    //         currentConvo = client.conversation.get(destination, { type: convo.type })
-    //     }
-
-    //     // If the message is in the current conversation, render it.
-    //     if (currentConvo.destination[0] === destination) {
-    //         renderLatestMessage(client.conversation.get(currentConvo.destination, { type: convo.type }))
-    //     }
-    // })
-
-    /*
-     * Listen for a change in the list of conversations.
-     * In our case, it will occur when we receive a message from a user that
-     * we do not have a conversation created with.
-     */
-    // client.on('conversations:change', function(convos) {
-    //     log('New conversation')
-
-    //     // If we don't have a current conversation, assign the new one and render it.
-    //     if (!currentConvo && convos.length !== 0) {
-    //         currentConvo = client.conversation.get(convos[0].destination, { type: convos[0].type })
-    //         renderLatestMessage(currentConvo)
-    //     }
-    // })
-
-    client.on('subscription:change', function () {
+    client.on('subscription:change', function() {
 
         if (
             client.services.getSubscriptions().isPending === false &&
@@ -97,11 +73,11 @@ function initClient() {
         }
     })
 
-    client.on('subscription:error', function () {
+    client.on('subscription:error', function() {
         log('Unable to subscribe')
     })
 
-    client.on('messages:new', function (convo) {
+    client.on('messages:new', function(convo) {
         const destination = convo.destination[0]
         log('New message in conversation with ' + destination)
 
@@ -115,61 +91,93 @@ function initClient() {
         }
     })
 
-    client.on('group:new', function (grou) {
-        // for (let [key, value] of Object.entries(grou.group)) {
-        //     console.log(`${key}: ${value}`);
-        // }
-        myGroup = grou.groupId;
-        console.log(myGroup);
-        // var groupIdent = myGroup.groupId
-        // console.log("id:" + groupIdent)
-        // var parInfo = myGroup.participant
-        // console.log("partic Info:")
-        // parInfo.forEach(function (item, index, array) {
-        //     console.log(item, index);
-        // });
-        console.log(JSON.stringify(grou))
-        log('Group created: ' + myGroup)
+    // Listen for changes in group-related activities (e.g. group has been created).
+    client.on('group:new', function(params) {
+        const groupNameTxt = document.getElementById('groupname').value
+        console.log("Params calue", params);
+
+        if (params.error) {
+            log('Failed to create the group with name: ' + groupNameTxt +
+                '. Code is: ' + params.error.error.code +
+                '. Error is: ' + params.error.error.message)
+        } else {
+            log('Successfully created the group with name: ' + groupNameTxt +
+                '. Its generated ID is: ' + params.id);
+        }
+
+        // Save the group ID to be used later, by the administrator
+        group_ID = params.id
+
+        // Add the admin actions but only ONCE no matter how many groups this  user creates.
+        if (adminUser && group_ID && !adminActionsAdded) {
+            //allowAddingAParticipant()
+
+            //allowRemovingAParticipant()
+
+            // We got a valid group ID and this user is the administrator, so allow the user to delete group later on..
+            //allowUserToDeleteGroup()
+
+            adminActionsAdded = true
+        }
     })
 
-    client.on('group:change', function (grou) {
-        /**console.log("changed group");
-        var groupIdent1 = grou.group.groupId
-        console.log("changed:" +groupIdent1)
-      var  parInfo1 = grou.group.participant
-        console.log("changed partic1:")  
-        parInfo1.forEach(function(item, index, array) {
-        console.log(item, index);
-        });
-        log('Group updated: '+myGroup.groupId)**/
-        console.log(myGroup)
-        console.log(grou)
-        console.log("changed group " + myGroup)
-        log('Group created/changed: ' + myGroup)
+    // Listen for an incoming invitation for a particular group ID
+    client.on('group:invitation_received', function(params) {
+        log('Automatically accepting invitation to joining group whose Id is: ' + params.invitation.id + ' whose name is: ' + params.invitation.name)
+        // For the purpose of making this example more simple, we'l just
+        // automatically send an accept answer to any of the invitations.
+        client.groups.acceptInvitation(params.invitation.id);
+
+        // Save group ID for later, in case this non-admin user decides to leave the group.
+        group_ID = params.invitation.id
+
+        if (!adminUser && group_ID) {
+            // It means this is the context in which a non-admin user is running.
+            // So display the 'leave button'.
+            // The 'Leave group' button should be hidden for the admin user, because
+            // admin user cannot just leave a group (without deleting it).
+            //allowUserToLeaveGroup()
+        }
     })
 
-    client.on('group:invitation_received', function (grou) {
+    client.on('group:change', function(params) {
+        if (!params.id) {
+            log('WARNING: No groupId for group:change event. Ignoring this notification...')
+            return
+        }
+        log('Received a group:change event for groupId: ' + params.id)
+        //refreshParticipantsList(params.groupId)
+    })
+
+    client.on('group:error', function(params) {
+        if (!params.error) {
+            return
+        }
+        log('Encountered a group related error: ' + params.error.toString())
+    })
+
+    /*client.on('group:invitation_received', function (grou) {
         console.log(grou)
         console.log(grou.invitation.groupId)
         log('Being invited to join: ' + grou.invitation.groupId + "..participant: " + grou.invitation.participant[0].address + "..status: " + grou.invitation.participant[0].status)
         // invitedToGroup = myGroup
         invitedToGroup = grou.invitation.groupId;
-		myGroup = invitedToGroup;
+        myGroup = invitedToGroup;
         console.log('invitedToGroup ---- ', invitedToGroup)
-    })
+    })*/
 
-    client.on('group:invitation_changed', function (grou) {
+    client.on('group:invitation_changed', function(grou) {
         console.log(grou);
         console.log('grou for invitation_changed : ', grou)
         log('Accepted/rejected the invite: ' + grou.groupId + "..participant: " + grou.group.participant + "..status: " + grou.group.status)
     })
 
-    client.on('group:delete', function (grou) {
+    client.on('group:delete', function(grou) {
         console.log(JSON.stringify(grou))
         log('Group ' + myGroup + ' has been deleted')
     })
 
-    client.on('messages:change', function (convo) {
+    client.on('messages:change', function(convo) {
         const destination = convo.destination[0]
         log('New message in conversation with ' + destination)
 
@@ -184,11 +192,11 @@ function initClient() {
     })
 
     /*
- * Listen for a change in the list of conversations.
- * In our case, it will occur when we receive a message from a user that
- * we do not have a conversation created with.
- */
-    client.on('conversations:change', function (convos) {
+     * Listen for a change in the list of conversations.
+     * In our case, it will occur when we receive a message from a user that
+     * we do not have a conversation created with.
+     */
+    client.on('conversations:change', function(convos) {
         log('New conversation')
         console.log(convos)
         // If we don't have a current conversation, assign the new one and render it.
@@ -196,6 +204,17 @@ function initClient() {
             currentConvo = client.conversation.get(convos.destination[0], { type: convos.type })
             renderLatestMessage(currentConvo)
         }
+    })
+
+    client.on('group:refresh', function(params) {
+        // Note: it is expected that 'params' is an empty object.
+        if (!group_ID) {
+            log('Could not refresh the participants list. No current group ID set.')
+            return
+        }
+        log('Received a group:refresh event. Refreshing the list of outstanding participants associated with current group id:' + group_ID)
+
+        //refreshParticipantsList(group_ID)
     })
 }
 
@@ -347,86 +366,44 @@ function log(message) {
     document.getElementById('terminal').innerHTML += '<p>' + message + '</p>';
 }
 
+// Create a new group.
 function createGroup() {
-	
-	let participant1 = document.getElementById('participant1').value;
-	let participant2 = document.getElementById('participant2').value;
-	let groupName = document.getElementById('groupname').value;
-	let subName = document.getElementById('subname').value;
-	
-	let obj1 = { "address": participant1};
-	let obj2 = { "address": participant2};
-	
-    var parArray = [obj1,obj2];
-	console.log(JSON.stringify(parArray));
-	
-    // { "address": "hcaidiocpaas7@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas8@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas9@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas10@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas11@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas12@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas13@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas14@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas52@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas16@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas17@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas18@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas19@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas20@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas21@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas22@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas23@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas24@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas25@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas53@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas27@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas28@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas29@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas30@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas31@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas32@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas33@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas34@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas35@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas36@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas37@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas38@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas39@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas40@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas41@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas42@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas43@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas44@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas45@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas46@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas47@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas49@hcaidio.ysxe.att.com" },
-    // { "address": "hcaidiocpaas50@hcaidio.ysxe.att.com" }];
+    const groupNameTxt = document.getElementById('groupname').value
+    const subjectTxt = document.getElementById('subname').value
+    const participantsTxt = document.getElementById('participant1').value
 
-    var params = {
-        "participants": parArray,
-        "subject": subName,
-        "name": groupName,
-        "image": "empty",
-        "type": "closed"
+    // subject text is optional
+    let params = subjectTxt ? { subject: subjectTxt, name: groupNameTxt, type: 'closed' } : { name: groupNameTxt, type: 'closed' }
+
+    // participants (other then admin user) are also optional
+    if (participantsTxt) {
+        let listOfParticipants = participantsTxt.split(',')
+        let participants = []
+        listOfParticipants.forEach(function(item) {
+            participants.push({ 'address': item })
+        })
+        params['participants'] = participants
     }
+    // Pass in the above parameters. This is an asynchronous request
+    // (i.e. result will be obtained through a callback listening for the 'group:new' event)
+    client.groups.create(params)
 
-    client.groups.create(params);
+    // Who ever hit the Create button becomes administrator user of the group, automatically.
+    adminUser = true
 }
 
 function addParticipant() {
-    console.log(myGroup)
-	let participant3 = document.getElementById('participant3').value;
+    console.log(group_ID)
+    let participant3 = document.getElementById('participant3').value;
     // client.groups.addParticipant(myGroup.groupId, "ramasafariapp@ramasafariappbus.3qdl.att.com")
-    client.groups.addParticipant(myGroup, participant3)
-    log('Add participant: ' + myGroup)
+    client.groups.addParticipant(group_ID, participant3)
+    log('Add participant: ' + group_ID)
 }
 
 function removeParticipant() {
-	let removeParticipant = document.getElementById('participant4').value;
-    client.groups.removeParticipant(myGroup, removeParticipant)
-    log('Remove participant: ' + myGroup)
+    let removeParticipant = document.getElementById('participant4').value;
+    client.groups.removeParticipant(group_ID, removeParticipant)
+    log('Remove participant: ' + group_ID)
 }
 
 function fetchGroupsFromServer() {
@@ -438,25 +415,24 @@ function getGroups() {
     var groupArray = client.groups.getAll()
     console.log("dump groupArray")
     log('Got groups: ' + JSON.stringify(groupArray));
-    groupArray.forEach(function (item, index, array) {
+    groupArray.forEach(function(item, index, array) {
         console.log(item, index)
     })
-
 }
 
 function getGroupById() {
     console.log("dump group by groupId")
-    var groupInfo = client.groups.get(myGroup)
-    log('Got group by Id: ' + myGroup + ".." + '\n' + JSON.stringify(groupInfo) + '\n')
+    var groupInfo = client.groups.get(group_ID)
+    log('Got group by Id: ' + group_ID + ".." + '\n' + JSON.stringify(groupInfo) + '\n')
     console.log(groupInfo)
 }
 
 function getPartiByGroupById() {
     console.log("dump Participants by groupId")
-    var partiArray = client.groups.getParticipants(myGroup)
+    var partiArray = client.groups.getParticipants(group_ID)
     console.log(partiArray)
-    log('Got participant by GroupId: ' + myGroup)
-    partiArray.forEach(function (item, index, array) {
+    log('Got participant by GroupId: ' + group_ID)
+    partiArray.forEach(function(item, index, array) {
         console.log(item, index)
     })
 }
@@ -471,14 +447,14 @@ function leaveGroupById() {
 
 function getInvites() {
     var inviteArray = client.groups.getInvitations()
-    log('Got list of Invites '+ JSON.stringify(inviteArray))
-    inviteArray.forEach(function (item, index, array) {
+    log('Got list of Invites ' + JSON.stringify(inviteArray))
+    inviteArray.forEach(function(item, index, array) {
         console.log(item, index)
     })
 }
 
 function acceptInvite() {
-	
+
     client.groups.acceptInvitation(invitedToGroup)
     log('Accept Invitation from: ' + invitedToGroup)
 }
@@ -489,68 +465,17 @@ function rejectInvite() {
 }
 
 function deleteGroupById() {
-    client.groups.delete(myGroup)
-    log('Deleting group: ' + myGroup)
+    client.groups.delete(group_ID)
+    log('Deleting group: ' + group_ID)
 }
 
 function fetchConvosInGroup() {
-    //  client.conversation.fetch(type='group')
-    //client.conversation.fetchMessages(100)
-    /**Try 1
-    client.conversation.fetch()
-    var conversations = client.conversation.getAll()
-    console.log("messages retrieved:")
-    console.log(conversations)
-    console.log('testing fetchMessages'+ conversations[0].messages.length)
-
-    //conversations[0].fetchMessages(100)
-
-    conversations.forEach(function(item, index, array) {  
-    console.log(item, index);
-    });
-
-    for(var i=0; i<conversations.length; i++)
-      console.log('printing conversations ' +i + ' '+conversations.length )
-      console.log(conversations[i].fetchMessages(100))
-      **/
-    // Try 2 
     client.conversation.fetch()
     var conversations = client.conversation.getAll()
     // var conversation = client.conversation.get(myGroup.groupId, { type: 'group' })
     console.log(conversations)
-    // conversations[0].fetchMessages(100)
-    //var messageArray = conversation.getMessages()
-    //console.log(messageArray.length)
-    //for(var i=0; i< messageArray.length; i++){
-    //console.log(messageArray[i])
-    //} 
-    // Try 3 
-    /**
-    //client.conversation.fetch()
-    var conversations = client.conversation.getAll()
-    console.log("messages retrieved:")
-    console.log(conversations)
-    console.log('retrieve messsages in this groupchat conversation'+ conversations[0].messages.length)    
-    for (var i = 0; i < conversations.length; i++) {
-    var mess = conversations[i].messages
-      if(mess instanceof Array){
-          for (var j = 0; j < mess.length; j++) {
-              var indMess = mess[j];
-              var part = indMess.parts
-              if(part instanceof Array){
-                  for (var k = 0; k < part.length; k++) {
-                      var message = part[k].text
-                      console.log(indMess.sender + ": " +message)
-                      }
-                  }
-              }
-          }
-      } 
-    console.log('retrieve messsages in this groupchat conversation finished')
-    **/
-    log('Fetching Conversations in group '+ JSON.stringify(conversations));
+    log('Fetching Conversations in group ' + JSON.stringify(conversations));
 }
-
 
 function printArray(array) {
     for (var i = 0; i < array.length; i++) {
@@ -566,10 +491,10 @@ function printArray(array) {
 // Create a new conversation with another user.
 function createConvo() {
     // Pass in the SIP address of a user to create a conversation with them.
-    console.log('myGroup : ', myGroup)
-    currentConvo = client.conversation.create(myGroup, { type: 'chat-group' })
+    console.log('myGroup : ', group_ID)
+    currentConvo = client.conversation.create(group_ID, { type: 'chat-group' })
 
-    log('Group Conversation created with: ' + myGroup)
+    log('Group Conversation created with: ' + group_ID)
 }
 
 // Create and send a message to the current conversation.
@@ -586,8 +511,6 @@ function sendMessage() {
         log('No current conversation to send message to.')
     }
 }
-
-
 
 // Display the latest message in the provided conversation.
 function renderLatestMessage(convo) {
