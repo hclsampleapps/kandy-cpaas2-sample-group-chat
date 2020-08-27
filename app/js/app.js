@@ -404,7 +404,6 @@ function createGroup() {
 function addParticipant() {
     console.log(group_ID)
     let participant3 = document.getElementById('participant3').value;
-    // client.groups.addParticipant(myGroup.groupId, "ramasafariapp@ramasafariappbus.3qdl.att.com")
     client.groups.addParticipant(group_ID, participant3)
     log('Add participant: ' + group_ID)
 }
