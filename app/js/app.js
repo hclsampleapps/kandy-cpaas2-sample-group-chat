@@ -265,7 +265,8 @@ async function getTokensByPasswordGrant({
     const data = await fetchResult.json()
     return {
         accessToken: data.access_token,
-        idToken: data.id_token
+        idToken: data.id_token,
+        expiresIn: data.expires_in
     }
 }
 
@@ -286,7 +287,7 @@ async function loginByPasswordGrant() {
                 password
             })
 
-            log('Successfully logged in as ' + userEmail)
+            log('Successfully logged in as ' + userEmail + '. Your access token will expire in ' + tokens.expiresIn/60 + ' minutes')
 
             client.setTokens(tokens)
         } catch (error) {
@@ -324,7 +325,8 @@ async function getTokensByClientCredGrant({
 
     return {
         accessToken: data.access_token,
-        idToken: data.id_token
+        idToken: data.id_token,
+        expiresIn: data.expires_in
     }
 }
 
