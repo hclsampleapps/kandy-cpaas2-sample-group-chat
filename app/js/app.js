@@ -165,15 +165,15 @@ function initClient() {
         log('Encountered a group related error: ' + params.error.toString())
     })
 
-    /*client.on('group:invitation_received', function (grou) {
+    client.on('group:invitation_received', function (grou) {
         console.log(grou)
-        console.log(grou.invitation.groupId)
-        log('Being invited to join: ' + grou.invitation.groupId + "..participant: " + grou.invitation.participant[0].address + "..status: " + grou.invitation.participant[0].status)
+        console.log(grou.invitation.id)
+        log('Being invited to join: ' + grou.invitation.id + "..participant: " + grou.invitation.participants[0].address + "..status: " + grou.invitation.participants[0].status)
         // invitedToGroup = myGroup
-        invitedToGroup = grou.invitation.groupId;
+        invitedToGroup = grou.invitation.id;
         myGroup = invitedToGroup;
         console.log('invitedToGroup ---- ', invitedToGroup)
-    })*/
+    })
 
     client.on('group:invitation_changed', function(grou) {
         console.log(grou);
